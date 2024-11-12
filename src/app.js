@@ -2,7 +2,10 @@ const express = require('express')
 const helmet = require('helmet')
 const morgan = require('morgan')
 const compression = require('compression')
+const cookieParser = require('cookie-parser')
+
 const logger = require('./v1/utils/logs/logger')
+
 const app = express()
 
 //init dbs
@@ -11,6 +14,8 @@ require('./v1/configs/databases/init.mysql')
 
 //user middleware
 app.use(helmet())
+app.use(cookieParser()) // Sử dụng cookie-parser middleware
+
 app.use(
 	morgan('combined', {
 		stream: {

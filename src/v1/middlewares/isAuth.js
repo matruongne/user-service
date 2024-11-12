@@ -1,16 +1,21 @@
 const jwt = require('jsonwebtoken')
+const { BadRequestException } = require('../utils/exceptions/commonException')
+const JWT_ACCESS_TOKEN_SECRET = Buffer.from(process.env.JWT_ACCESS_TOKEN_SECRET, 'base64')
 
 const authenticateToken = (req, res, next) => {
-	const authHeader = req.headers['authorization']
-	const token = authHeader && authHeader.split(' ')[1]
-
-	if (!token) return res.sendStatus(401)
-
-	jwt.verify(token, process.env.JWT_ACCESS_TOKEN_SECRET, (err, user) => {
-		if (err) return res.sendStatus(403)
-		req.user = user
+	try {
+		token = req.cookies?.accessToken
+	} catch (e) {
+		console.log('get token from cookies failed:', e.message)
+		return res.sendStatus(403)
+	}
+	try {
+		const user = jwt.verify(token, JWT_ACCESS_TOKEN_SECRET)
+		req.user = user.user
 		next()
-	})
+	} catch (err) {
+		throw new BadRequestException('Invalid token or token expired')
+	}
 }
 
 module.exports = authenticateToken
