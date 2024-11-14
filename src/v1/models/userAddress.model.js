@@ -8,7 +8,7 @@ const UserAddress = sequelize.define(
 	'UserAddress',
 	{
 		user_id: {
-			type: DataTypes.INTEGER,
+			type: DataTypes.STRING(24),
 			references: {
 				model: User,
 				key: 'user_id',
@@ -16,7 +16,7 @@ const UserAddress = sequelize.define(
 			primaryKey: true,
 		},
 		address_id: {
-			type: DataTypes.INTEGER,
+			type: DataTypes.STRING(24),
 			references: {
 				model: Address,
 				key: 'address_id',

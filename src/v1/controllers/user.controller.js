@@ -9,7 +9,7 @@ class UserController extends BasicController {
 	}
 	async getUserById(req, res) {
 		try {
-			const user = await userService.getUserById({ id: req.params.id })
+			const user = await userService.getUserById({ id: req?.user.user_id })
 			res.json(user)
 		} catch (error) {
 			return this.handleResponseError(res, error)
@@ -17,8 +17,46 @@ class UserController extends BasicController {
 	}
 	async updateUser(req, res) {
 		try {
-			const user = await userService.updateUser({ id: req.params.id, data: req.body })
+			const user = await userService.updateUser({ id: req?.user.user_id, data: req.body })
 			res.json(user)
+		} catch (error) {
+			return this.handleResponseError(res, error)
+		}
+	}
+
+	async updateUserAddress(req, res) {
+		try {
+			const updateUser = await userService.updateUserAddress({
+				id: req?.user.user_id,
+				addressData: req.body,
+			})
+			res.json(updateUser)
+		} catch (error) {
+			return this.handleResponseError(res, error)
+		}
+	}
+
+	async updatePassword(req, res) {
+		try {
+			const updateUser = await userService.updatePassword({
+				id: req?.user.user_id,
+				...req.body,
+			})
+			res.json(updateUser)
+		} catch (error) {
+			return this.handleResponseError(res, error)
+		}
+	}
+	async deleteUser(req, res) {
+		try {
+			const updateUser = await userService.deleteUser({
+				id: req?.user.user_id,
+			})
+			if (updateUser) {
+				res.clearCookie('refreshToken')
+				res.clearCookie('accessToken')
+			}
+			res.json(updateUser)
 		} catch (error) {
 			return this.handleResponseError(res, error)
 		}

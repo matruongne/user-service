@@ -14,7 +14,7 @@ const authenticateToken = (req, res, next) => {
 		req.user = user.user
 		next()
 	} catch (err) {
-		throw new BadRequestException('Invalid token or token expired')
+		throw new BadRequestException('Unauthorized Error: Invalid token or token expired', 401, 401)
 	}
 }
 

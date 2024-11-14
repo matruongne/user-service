@@ -1,12 +1,13 @@
 const { DataTypes } = require('sequelize')
 const { sequelize } = require('../configs/databases/init.mysql')
+const { v4: uuidv4 } = require('uuid')
 
 const Address = sequelize.define(
 	'Address',
 	{
 		address_id: {
-			type: DataTypes.INTEGER,
-			autoIncrement: true,
+			type: DataTypes.STRING(24),
+			defaultValue: () => uuidv4().replace(/-/g, '').slice(0, 24),
 			primaryKey: true,
 		},
 		latitude: {
@@ -25,6 +26,9 @@ const Address = sequelize.define(
 			type: DataTypes.STRING,
 		},
 		suburb: {
+			type: DataTypes.STRING,
+		},
+		quarter: {
 			type: DataTypes.STRING,
 		},
 		street: {

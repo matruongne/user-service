@@ -1,13 +1,14 @@
 const { DataTypes } = require('sequelize')
 const { sequelize } = require('../configs/databases/init.mysql')
+const { v4: uuidv4 } = require('uuid')
 const Role = require('./role.model')
 
 const User = sequelize.define(
 	'User',
 	{
 		user_id: {
-			type: DataTypes.INTEGER,
-			autoIncrement: true,
+			type: DataTypes.STRING(24),
+			defaultValue: () => uuidv4().replace(/-/g, '').slice(0, 24),
 			primaryKey: true,
 		},
 		username: {
@@ -40,7 +41,7 @@ const User = sequelize.define(
 			type: DataTypes.STRING,
 		},
 		role_id: {
-			type: DataTypes.INTEGER,
+			type: DataTypes.STRING(24),
 			references: {
 				model: Role,
 				key: 'role_id',
