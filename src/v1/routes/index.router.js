@@ -2,7 +2,7 @@ const express = require('express')
 const router = express.Router()
 const userRouter = require('./user.router')
 const adminRouter = require('./admin.router')
-const isAuth = require('../middlewares/isAuth')
+const isAdmin = require('../middlewares/isAdmin')
 
 router.get('/checkstatus', (req, res, next) => {
 	res.status(200).json({
@@ -10,10 +10,11 @@ router.get('/checkstatus', (req, res, next) => {
 		message: 'api ok',
 	})
 })
-router.use(isAuth)
-
-router.use('/v1/admin', adminRouter)
 
 router.use('/v1/user', userRouter)
+
+router.use(isAdmin)
+
+router.use('/v1/admin', adminRouter)
 
 module.exports = router

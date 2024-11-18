@@ -40,6 +40,10 @@ const User = sequelize.define(
 		resetPasswordToken: {
 			type: DataTypes.STRING,
 		},
+		is_verified: {
+			type: DataTypes.BOOLEAN,
+			defaultValue: false,
+		},
 		role_id: {
 			type: DataTypes.STRING(24),
 			references: {

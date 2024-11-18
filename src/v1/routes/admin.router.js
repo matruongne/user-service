@@ -1,6 +1,9 @@
 const express = require('express')
 const router = express.Router()
 const adminController = require('../controllers/admin.controller')
+const isAuth = require('../middlewares/isAuth')
+
+router.use(isAuth)
 
 router.get('/users', adminController.getlistUsers)
 router.get('/roles', adminController.getAllRole)

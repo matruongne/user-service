@@ -7,8 +7,9 @@ const {
 	TargetNotExistException,
 	BadRequestException,
 } = require('../utils/exceptions/commonException')
-const { REDIS_SET, REDIS_GET, REDIS_DEL, REDIS_SETEX } = require('./redis.service')
+const { REDIS_GET, REDIS_DEL, REDIS_SETEX } = require('./redis.service')
 const { sequelize } = require('../configs/databases/init.mysql')
+const crypto = require('crypto')
 
 class usesrService {
 	async getUserById({ id: userId }) {
@@ -51,7 +52,7 @@ class usesrService {
 		})
 
 		if (user) {
-			await REDIS_SET(cacheKey, JSON.stringify(user), 'EX', 3600)
+			await REDIS_SETEX(cacheKey, 3600, JSON.stringify(user))
 		}
 		return user
 	}
@@ -187,30 +188,44 @@ class usesrService {
 		}
 	}
 
-	// async requestPasswordReset(email) {
-	// 	const user = await User.findOne({ where: { email } })
-	// 	if (!user) throw new Error('User not found')
+	async requestPasswordReset({ email }) {
+		const user = await User.findOne({ where: { email } })
+		if (!user) throw new Error('User not found')
 
-	// 	const resetToken = jwt.sign({ userId: user.user_id }, process.env.JWT_SECRET, {
-	// 		expiresIn: '1h',
-	// 	})
-	// 	await redisClient.set(`resetToken:${user.user_id}`, resetToken, { EX: 3600 }) // 1 hour
-	// 	// Send resetToken to user's email
-	// 	return resetToken
-	// }
+		const resetCode = crypto.randomInt(100000, 999999).toString()
 
-	// // Reset password using token
-	// async resetPassword(userId, token, newPassword) {
-	// 	const storedToken = await redisClient.get(`resetToken:${userId}`)
-	// 	if (!storedToken || storedToken !== token) throw new Error('Invalid or expired token')
+		await REDIS_SETEX(`resetCode:${user.user_id}`, 3600, resetCode)
 
-	// 	const salt = await bcrypt.genSalt(10)
-	// 	const passwordHash = await bcrypt.hash(newPassword, salt)
+		return { email, user_id: user.user_id, resetCode }
+	}
 
-	// 	await User.update({ password_hash: passwordHash, salt }, { where: { user_id: userId } })
-	// 	await REDIS_DEL(`resetToken:${userId}`)
-	// 	return true
-	// }
+	async resetPassword({ user_id, code }) {
+		const storedCode = await REDIS_GET(`resetCode:${user_id}`)
+
+		if (!storedCode || storedCode !== code.toString())
+			throw new Error('Invalid reset password code')
+
+		await REDIS_DEL(`resetCode:${user_id}`)
+
+		return { processStatus: true }
+	}
+
+	async createNewPassword({ user_id, newPassword }) {
+		try {
+			const user = await User.findOne({ where: { user_id } })
+			if (!user) throw new TargetNotExistException()
+
+			const salt = await bcrypt.genSalt(10)
+			const passwordHash = await bcrypt.hash(newPassword, salt)
+
+			await User.update({ password_hash: passwordHash, salt }, { where: { user_id } })
+
+			return { processStatus: true }
+		} catch (error) {
+			console.error('Error creating password:', error)
+			throw new Error(error.message || 'Failed to creating password')
+		}
+	}
 }
 
 module.exports = new usesrService()
