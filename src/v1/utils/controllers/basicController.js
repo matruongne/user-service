@@ -5,14 +5,14 @@ class BasicController {
 	handleResponseError(res, error) {
 		if (error instanceof CommonException) {
 			logger.error(
-				`${error.status || 500} - ${
+				`${error.statusCode || 500} - ${
 					error.message || 'Something went wrong, please check the information and try again later'
 				}`
 			)
-			return res.status(error.status || 500).json(error.message)
+			return res.status(error.statusCode || 500).json(error.message)
 		}
 		console.log(error)
-		return res.status(error.status || 500).json({
+		return res.status(error.statusCode || 500).json({
 			message:
 				error.message || 'Something went wrong, please check the information and try again later',
 		})
